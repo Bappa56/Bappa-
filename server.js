@@ -13,7 +13,7 @@ if (!admin.apps.length) {
   const serviceAccount = JSON.parse(serviceAccountJson);
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://turnement-cbb42-default-rtdb.firebaseio.com"
+    databaseURL: "https://console.firebase.google.com/u/1/project/ff-hun/database/ff-hun-default-rtdb/data/~2F"
   });
 }
 const db = admin.database();
