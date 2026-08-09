@@ -1,46 +1,493 @@
 <!doctype html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Payment Voice Alert</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f3f4f6;font-family:Arial;color:#111827}
-header{background:#111827;color:#fff;text-align:center;padding:18px;font-size:21px;font-weight:700}
-main{max-width:520px;margin:auto;padding:16px}.card{background:#fff;border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 5px 18px #0001}
-.balance{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}.label{font-size:14px}.amount{font-size:36px;font-weight:800;margin:8px 0 16px}
-button{border:0;border-radius:10px;padding:11px 16px;font-weight:700}.refresh{color:#2563eb}.voice{background:#111827;color:#fff;width:100%;margin:10px 0}
-.qr{text-align:center}.qr img{width:290px;max-width:100%;border-radius:12px}.muted{color:#6b7280;font-size:13px}
-.row{padding:13px 0;border-bottom:1px solid #e5e7eb}.green{color:#16a34a;font-weight:700}.empty{text-align:center;color:#777;padding:20px}.status{color:#16a34a;font-size:13px}
-</style></head><body>
-<header>Payment Voice Alert</header><main>
-<section class="card balance"><div class="label">Total Collect Amount</div>
-<div class="amount" id="total">₹0.00</div><button class="refresh" onclick="load()">🔄 Refresh Balance</button></section>
-<section class="card qr"><h2>Scan & Pay</h2><img src="/qr.png" alt="UPI QR Code">
-<p>Scan using your UPI app.</p><div class="muted">Google Pay • PhonePe • Paytm • BHIM</div></section>
-<section class="card"><h2>Transaction History</h2>
-<button class="voice" onclick="enableVoice()" id="voice">🔊 Enable Payment Voice Alert</button>
-<div id="list"><div class="empty">Loading...</div></div></section>
-</main>
-<script>
-let known=new Set(),first=true,voice=false;
-function enableVoice(){if(!speechSynthesis)return alert("Voice is not supported");voice=true;document.getElementById("voice").textContent="🔊 Voice Alert Enabled";speechSynthesis.speak(new SpeechSynthesisUtterance("Payment voice alert enabled"))}
-function esc(x){return String(x??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;")}
-async function load(){
- try{
-  const r=await fetch("/payments",{cache:"no-store"});const d=await r.json();
-  document.getElementById("total").textContent="₹"+Number(d.total||0).toFixed(2);
-  const list=document.getElementById("list");list.innerHTML="";
-  if(!d.payments?.length){list.innerHTML='<div class="empty">No transactions yet</div>';first=false;return}
-  for(const p of d.payments){
-   const id=p.paymentId||"";const div=document.createElement("div");div.className="row";
-   div.innerHTML=`<div>Payment ID: <b>${esc(id)}</b></div><div class="green">+ ₹${Number(p.amount||0).toFixed(2)}</div><div>Method: ${esc(p.method||"UPI")}</div><div>${esc(p.email||"")}</div><div class="status">● ${esc(p.status||"captured")}</div><div class="muted">${p.createdAt?new Date(p.createdAt).toLocaleString():""}</div>`;
-   list.appendChild(div);
-   if(!first&&!known.has(id)&&!p.voicePlayed&&voice){
-    speechSynthesis.speak(new SpeechSynthesisUtterance("Payment received. Rupees "+Number(p.amount||0).toFixed(2)));
-    fetch("/payments/"+encodeURIComponent(id)+"/voice-played",{method:"POST"});
-   }
-   known.add(id);
-  } first=false;
- }catch(e){document.getElementById("list").innerHTML='<div class="empty">Unable to load transactions</div>'}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#f3f4f6;
+  font-family:Arial,sans-serif;
+  color:#111827
 }
-load();setInterval(load,5000);
-</script></body></html>
+
+header{
+  background:#111827;
+  color:#fff;
+  text-align:center;
+  padding:18px;
+  font-size:21px;
+  font-weight:700
+}
+
+main{
+  max-width:520px;
+  margin:auto;
+  padding:16px
+}
+
+.card{
+  background:#fff;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 5px 18px #0001
+}
+
+.balance{
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  color:#fff
+}
+
+.label{
+  font-size:14px
+}
+
+.amount{
+  font-size:36px;
+  font-weight:800;
+  margin:8px 0 16px
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:11px 16px;
+  font-weight:700;
+  cursor:pointer
+}
+
+.refresh{
+  color:#2563eb
+}
+
+.voice{
+  background:#111827;
+  color:#fff;
+  width:100%;
+  margin:10px 0
+}
+
+.qr{
+  text-align:center
+}
+
+.qr img{
+  width:290px;
+  max-width:100%;
+  border-radius:12px
+}
+
+.muted{
+  color:#6b7280;
+  font-size:13px
+}
+
+.row{
+  padding:13px 0;
+  border-bottom:1px solid #e5e7eb
+}
+
+.green{
+  color:#16a34a;
+  font-weight:700
+}
+
+.empty{
+  text-align:center;
+  color:#777;
+  padding:20px
+}
+
+.status{
+  color:#16a34a;
+  font-size:13px
+}
+</style>
+</head>
+
+<body>
+
+<header>Payment Voice Alert</header>
+
+<main>
+
+<section class="card balance">
+
+<div class="label">Total Collect Amount</div>
+
+<div class="amount" id="total">₹0.00</div>
+
+<button class="refresh" onclick="load()">
+🔄 Refresh Balance
+</button>
+
+</section>
+
+
+<section class="card qr">
+
+<h2>Scan & Pay</h2>
+
+<img src="/qr.png" alt="UPI QR Code">
+
+<p>Scan using your UPI app.</p>
+
+<div class="muted">
+Google Pay • PhonePe • Paytm • BHIM
+</div>
+
+</section>
+
+
+<section class="card">
+
+<h2>Transaction History</h2>
+
+<button
+class="voice"
+onclick="enableVoice()"
+id="voice">
+
+🔊 বাংলা Voice Alert চালু করুন
+
+</button>
+
+<div id="voiceStatus"
+class="status"
+style="display:none">
+
+● বাংলা Voice Alert চালু আছে
+
+</div>
+
+<div id="list">
+
+<div class="empty">
+Loading...
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<script>
+
+/* ================================
+   PAYMENT VOICE SYSTEM
+================================ */
+
+let known = new Set();
+let first = true;
+let voice = false;
+
+
+/* Get Bengali voice */
+
+function getBengaliVoice(){
+
+  if(!("speechSynthesis" in window)){
+    return null;
+  }
+
+  const voices = speechSynthesis.getVoices();
+
+  /* First preference: Bengali India */
+
+  let bn = voices.find(v =>
+    v.lang &&
+    v.lang.toLowerCase() === "bn-in"
+  );
+
+  /* Second preference: any Bengali */
+
+  if(!bn){
+
+    bn = voices.find(v =>
+      v.lang &&
+      v.lang.toLowerCase().startsWith("bn")
+    );
+
+  }
+
+  return bn || null;
+}
+
+
+/* Bengali text to speech */
+
+function speakBengali(text){
+
+  if(!("speechSynthesis" in window)){
+    alert("এই browser-এ Voice Support নেই");
+    return;
+  }
+
+  speechSynthesis.cancel();
+
+  const msg =
+    new SpeechSynthesisUtterance(text);
+
+  msg.lang = "bn-IN";
+  msg.rate = 0.88;
+  msg.pitch = 1;
+  msg.volume = 1;
+
+  const bnVoice = getBengaliVoice();
+
+  if(bnVoice){
+    msg.voice = bnVoice;
+  }
+
+  speechSynthesis.speak(msg);
+}
+
+
+/* Enable Bengali Voice */
+
+function enableVoice(){
+
+  if(!("speechSynthesis" in window)){
+
+    alert(
+      "এই browser-এ Voice Support নেই"
+    );
+
+    return;
+  }
+
+  voice = true;
+
+  document.getElementById("voice").textContent =
+    "🔊 বাংলা Voice Alert চালু আছে";
+
+  document.getElementById("voiceStatus").style.display =
+    "block";
+
+  speakBengali(
+    "বাংলা পেমেন্ট ভয়েস অ্যালার্ট চালু হয়েছে"
+  );
+}
+
+
+/* Payment announcement */
+
+function announcePayment(amount){
+
+  if(!voice) return;
+
+  const value =
+    Number(amount || 0).toFixed(2);
+
+  speakBengali(
+    "পেমেন্ট পাওয়া গেছে। " +
+    value +
+    " টাকা।"
+  );
+}
+
+
+/* ================================
+   ESCAPE HTML
+================================ */
+
+function esc(x){
+
+  return String(x ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+
+
+/* ================================
+   LOAD PAYMENTS
+================================ */
+
+async function load(){
+
+  try{
+
+    const r = await fetch(
+      "/payments",
+      {
+        cache:"no-store"
+      }
+    );
+
+    const d = await r.json();
+
+
+    /* Total */
+
+    document.getElementById("total")
+      .textContent =
+      "₹" +
+      Number(d.total || 0).toFixed(2);
+
+
+    const list =
+      document.getElementById("list");
+
+    list.innerHTML = "";
+
+
+    /* No payments */
+
+    if(!d.payments?.length){
+
+      list.innerHTML =
+        '<div class="empty">' +
+        'No transactions yet' +
+        '</div>';
+
+      first = false;
+
+      return;
+    }
+
+
+    /* Payment list */
+
+    for(const p of d.payments){
+
+      const id =
+        p.paymentId || "";
+
+      const div =
+        document.createElement("div");
+
+      div.className = "row";
+
+
+      div.innerHTML = `
+
+        <div>
+          Payment ID:
+          <b>${esc(id)}</b>
+        </div>
+
+        <div class="green">
+          + ₹${Number(p.amount || 0).toFixed(2)}
+        </div>
+
+        <div>
+          Method:
+          ${esc(p.method || "UPI")}
+        </div>
+
+        <div>
+          ${esc(p.email || "")}
+        </div>
+
+        <div class="status">
+          ● ${esc(p.status || "captured")}
+        </div>
+
+        <div class="muted">
+          ${
+            p.createdAt
+            ? new Date(p.createdAt).toLocaleString("bn-IN")
+            : ""
+          }
+        </div>
+
+      `;
+
+
+      list.appendChild(div);
+
+
+      /* ================================
+         NEW PAYMENT VOICE
+      ================================= */
+
+      if(
+        !first &&
+        !known.has(id) &&
+        !p.voicePlayed &&
+        voice
+      ){
+
+        announcePayment(
+          p.amount
+        );
+
+
+        /* Mark voice played */
+
+        fetch(
+          "/payments/" +
+          encodeURIComponent(id) +
+          "/voice-played",
+          {
+            method:"POST"
+          }
+        ).catch(() => {});
+
+      }
+
+
+      known.add(id);
+
+    }
+
+
+    first = false;
+
+  }
+
+  catch(e){
+
+    console.error(e);
+
+    document.getElementById("list")
+      .innerHTML =
+      '<div class="empty">' +
+      'Unable to load transactions' +
+      '</div>';
+
+  }
+
+}
+
+
+/* Load Bengali voices */
+
+if("speechSynthesis" in window){
+
+  speechSynthesis.onvoiceschanged =
+    function(){
+
+      speechSynthesis.getVoices();
+
+    };
+
+}
+
+
+/* First load */
+
+load();
+
+
+/* Check payment every 5 seconds */
+
+setInterval(
+  load,
+  5000
+);
+
+</script>
+
+</body>
+</html>
