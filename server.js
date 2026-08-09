@@ -13,7 +13,7 @@ if (!admin.apps.length) {
   const serviceAccount = JSON.parse(serviceAccountJson);
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://console.firebase.google.com/u/1/project/ff-hun/database/ff-hun-default-rtdb/data/~2F"
+    databaseURL: "https://ff-hun-default-rtdb.asia-southeast1.firebasedatabase.app"
   });
 }
 const db = admin.database();
