@@ -71,4 +71,25 @@ app.post("/razorpay/webhook", async (req, res) => {
 app.get("/health", (_, res) => res.json({ ok: true }));
 
 const port = process.env.PORT || 3000;
+app.get("/firebase-test", async (req, res) => {
+  try {
+    await db.ref("system/test").set({
+      message: "Firebase connection successful",
+      time: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: "Firebase Realtime Database working"
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 app.listen(port, () => console.log(`Server listening on ${port}`));
