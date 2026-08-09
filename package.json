@@ -1,0 +1,8 @@
+{
+  "name":"razorpay-firebase-payment-voice",
+  "version":"1.0.0",
+  "private":true,
+  "main":"server.js",
+  "scripts":{"start":"node server.js"},
+  "dependencies":{"express":"^4.21.2","firebase-admin":"^13.0.1"}
+}

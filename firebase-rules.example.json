@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "payments": {
+      ".read": "auth != null",
+      ".write": false,
+      "$paymentId": {
+        ".validate": "newData.hasChildren(['paymentId','amount','currency','status','createdAt'])"
+      }
+    }
+  }
+}
