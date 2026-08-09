@@ -1,1 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
+<title>Payment Voice Alert</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6fb;
+  color: #111827;
+}
+
+.header {
+  background: #111827;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 23px;
+}
+
+.header p {
+  margin-top: 5px;
+  color: #cbd5e1;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 18px;
+}
+
+/* Balance */
+
+.balance-card {
+  background: white;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 5px 20px rgba(0,0,0,.08);
+  margin-bottom: 18px;
+}
+
+.balance-title {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.balance {
+  font-size: 38px;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.refresh {
+  width: 100%;
+  border: 0;
+  padding: 13px;
+  border-radius: 12px;
+  background: #111827;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* QR */
+
+.qr-card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0,0,0,.08);
+  margin-bottom: 18px;
+}
+
+.qr-card h2 {
+  margin-bottom: 15px;
+}
+
+.qr-card img {
+  width: 270px;
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.qr-name {
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.qr-sub {
+  color: #64748b;
+  margin-top: 5px;
+}
+
+/* Transactions */
+
+.transaction-card {
+  background: white;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 5px 20px rgba(0,0,0,.08);
+}
+
+.transaction-card h2 {
+  margin-bottom: 15px;
+}
+
+.transaction {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 14px 0;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.amount {
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.success {
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.details {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 6px;
+  word-break: break-all;
+}
+
+.empty {
+  text-align: center;
+  color: #64748b;
+  padding: 25px;
+}
+
+/* Voice */
+
+.voice-box {
+  margin-top: 18px;
+  background: #111827;
+  color: white;
+  padding: 18px;
+  border-radius: 15px;
+}
+
+.voice-box button {
+  margin-top: 10px;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.footer {
+  text-align: center;
+  color: #64748b;
+  padding: 25px;
+  font-size: 13px;
+}
+
+@media(max-width:500px) {
+
+  .container {
+    padding: 12px;
+  }
+
+  .balance {
+    font-size: 32px;
+  }
+
+  .qr-card img {
+    width: 240px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>💳 Payment Voice Alert</h1>
+  <p>Live Payment Dashboard</p>
+</div>
+
+<div class="container">
+
+  <!-- BALANCE -->
+
+  <div class="balance-card">
+
+    <div class="balance-title">
+      TOTAL COLLECTED
+    </div>
+
+    <div class="balance" id="total">
+      ₹0.00
+    </div>
+
+    <button class="refresh" onclick="loadPayments()">
+      🔄 Instant Refresh Balance
+    </button>
+
+  </div>
+
+
+  <!-- QR -->
+
+  <div class="qr-card">
+
+    <h2>Scan & Pay</h2>
+
+    <img src="/qr.png"
+         alt="UPI Payment QR Code">
+
+    <div class="qr-name">
+      BAPPA BISWAS
+    </div>
+
+    <div class="qr-sub">
+      Scan with any UPI App
+    </div>
+
+  </div>
+
+
+  <!-- VOICE -->
+
+  <div class="voice-box">
+
+    <div>
+      🔊 Payment Voice Alert
+    </div>
+
+    <button onclick="enableVoice()">
+      Enable Voice
+    </button>
+
+    <div id="voiceStatus"
+         style="margin-top:8px;font-size:13px;">
+      Voice permission required
+    </div>
+
+  </div>
+
+
+  <!-- TRANSACTIONS -->
+
+  <div class="transaction-card"
+       style="margin-top:18px;">
+
+    <h2>Transaction History</h2>
+
+    <div id="transactions">
+      <div class="empty">
+        Loading transactions...
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer">
+  Payment Voice Alert System
+</div>
+
+
+<script>
+
+let previousPayments = {};
+let voiceEnabled = false;
+
+
+/* Enable Voice */
+
+function enableVoice() {
+
+  if (!("speechSynthesis" in window)) {
+    alert("Voice is not supported in this browser.");
+    return;
+  }
+
+  const speech = new SpeechSynthesisUtterance(
+    "Payment voice alert enabled"
+  );
+
+  speech.lang = "en-IN";
+  speech.rate = 0.9;
+
+  window.speechSynthesis.speak(speech);
+
+  voiceEnabled = true;
+
+  document.getElementById("voiceStatus").innerText =
+    "✅ Voice Alert Enabled";
+}
+
+
+/* Voice Payment */
+
+function speakPayment(amount) {
+
+  if (!voiceEnabled) return;
+
+  const speech =
+    new SpeechSynthesisUtterance(
+      "Payment received, rupees " + amount
+    );
+
+  speech.lang = "en-IN";
+  speech.rate = 0.85;
+  speech.volume = 1;
+
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(speech);
+}
+
+
+/* Format Time */
+
+function formatDate(timestamp) {
+
+  if (!timestamp) return "-";
+
+  const date = new Date(timestamp);
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+
+/* Load Payments */
+
+async function loadPayments() {
+
+  try {
+
+    const response =
+      await fetch("/payments", {
+        cache: "no-store"
+      });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error);
+    }
+
+
+    /* Total */
+
+    document.getElementById("total").innerText =
+      "₹" + Number(data.total).toFixed(2);
+
+
+    /* Transactions */
+
+    const box =
+      document.getElementById("transactions");
+
+    box.innerHTML = "";
+
+
+    if (!data.payments.length) {
+
+      box.innerHTML =
+        '<div class="empty">No payment received yet</div>';
+
+      return;
+    }
+
+
+    data.payments.forEach(payment => {
+
+      const div =
+        document.createElement("div");
+
+      div.className = "transaction";
+
+      div.innerHTML = `
+
+        <div class="row">
+
+          <div class="amount">
+            ₹${Number(payment.amount || 0).toFixed(2)}
+          </div>
+
+          <div class="success">
+            ✓ ${payment.status || "captured"}
+          </div>
+
+        </div>
+
+        <div class="details">
+          Payment ID:
+          ${payment.paymentId || "-"}
+        </div>
+
+        <div class="details">
+          Method:
+          ${(payment.method || "-").toUpperCase()}
+        </div>
+
+        <div class="details">
+          Time:
+          ${formatDate(payment.createdAt)}
+        </div>
+
+        <div class="details">
+          Contact:
+          ${payment.contact || "-"}
+        </div>
+      `;
+
+      box.appendChild(div);
+
+    });
+
+
+    /* Detect New Payment */
+
+    const currentPayments = {};
+
+    data.payments.forEach(payment => {
+
+      currentPayments[payment.paymentId] =
+        payment;
+
+      if (
+        !previousPayments[payment.paymentId] &&
+        previousPaymentsLoaded
+      ) {
+
+        speakPayment(
+          Number(payment.amount || 0)
+        );
+
+      }
+
+    });
+
+    previousPayments =
+      currentPayments;
+
+    previousPaymentsLoaded = true;
+
+  } catch (error) {
+
+    console.error(error);
+
+    document.getElementById("transactions").innerHTML =
+      `<div class="empty">
+        Unable to load transactions
+      </div>`;
+
+  }
+}
+
+
+let previousPaymentsLoaded = false;
+
+
+/* First Load */
+
+loadPayments();
+
+
+/* Auto Refresh Every 5 Seconds */
+
+setInterval(
+  loadPayments,
+  5000
+);
+
+</script>
+
+</body>
+</html>
