@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="bn">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,7 +8,10 @@
 <title>Payment Voice Alert</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+  box-sizing:border-box
+}
 
 body{
   margin:0;
@@ -108,20 +112,49 @@ button{
   color:#16a34a;
   font-size:13px
 }
+
+/* QR COUNTDOWN */
+
+.countdown{
+  margin-top:12px;
+  padding:10px;
+  background:#111827;
+  color:#fff;
+  border-radius:10px;
+  font-size:20px;
+  font-weight:800;
+  text-align:center
+}
+
+.expired{
+  background:#dc2626
+}
+
 </style>
 </head>
 
+
 <body>
 
-<header>Payment Voice Alert</header>
+<header>
+Payment Voice Alert
+</header>
+
 
 <main>
 
+
+<!-- BALANCE -->
+
 <section class="card balance">
 
-<div class="label">Total Collect Amount</div>
+<div class="label">
+Total Collect Amount
+</div>
 
-<div class="amount" id="total">₹0.00</div>
+<div class="amount" id="total">
+₹0.00
+</div>
 
 <button class="refresh" onclick="load()">
 🔄 Refresh Balance
@@ -130,13 +163,31 @@ button{
 </section>
 
 
+<!-- QR CODE -->
+
 <section class="card qr">
 
-<h2>Scan & Pay</h2>
+<h2>
+Scan & Pay
+</h2>
 
-<img src="/qr.png" alt="UPI QR Code">
+<img
+src="/qr.png"
+alt="UPI QR Code"
+>
 
-<p>Scan using your UPI app.</p>
+<!-- 5 MINUTE COUNTDOWN -->
+
+<div
+id="qrCountdown"
+class="countdown"
+>
+⏱️ 05:00
+</div>
+
+<p>
+Scan using your UPI app.
+</p>
 
 <div class="muted">
 Google Pay • PhonePe • Paytm • BHIM
@@ -145,26 +196,34 @@ Google Pay • PhonePe • Paytm • BHIM
 </section>
 
 
+<!-- TRANSACTION HISTORY -->
+
 <section class="card">
 
-<h2>Transaction History</h2>
+<h2>
+Transaction History
+</h2>
+
+
+<!-- VOICE BUTTON -->
 
 <button
 class="voice"
 onclick="enableVoice()"
-id="voice">
-
+id="voice"
+>
 🔊 বাংলা Voice Alert চালু করুন
-
 </button>
 
-<div id="voiceStatus"
+
+<div
+id="voiceStatus"
 class="status"
-style="display:none">
-
+style="display:none"
+>
 ● বাংলা Voice Alert চালু আছে
-
 </div>
+
 
 <div id="list">
 
@@ -176,21 +235,26 @@ Loading...
 
 </section>
 
+
 </main>
 
 
 <script>
 
-/* ================================
-   PAYMENT VOICE SYSTEM
-================================ */
+/* =================================
+   VARIABLES
+================================= */
 
 let known = new Set();
+
 let first = true;
+
 let voice = false;
 
 
-/* Get Bengali voice */
+/* =================================
+   BENGALI VOICE
+================================= */
 
 function getBengaliVoice(){
 
@@ -198,23 +262,22 @@ function getBengaliVoice(){
     return null;
   }
 
-  const voices = speechSynthesis.getVoices();
+  const voices =
+    speechSynthesis.getVoices();
 
-  /* First preference: Bengali India */
-
-  let bn = voices.find(v =>
-    v.lang &&
-    v.lang.toLowerCase() === "bn-in"
-  );
-
-  /* Second preference: any Bengali */
+  let bn =
+    voices.find(v =>
+      v.lang &&
+      v.lang.toLowerCase() === "bn-in"
+    );
 
   if(!bn){
 
-    bn = voices.find(v =>
-      v.lang &&
-      v.lang.toLowerCase().startsWith("bn")
-    );
+    bn =
+      voices.find(v =>
+        v.lang &&
+        v.lang.toLowerCase().startsWith("bn")
+      );
 
   }
 
@@ -222,12 +285,18 @@ function getBengaliVoice(){
 }
 
 
-/* Bengali text to speech */
+/* =================================
+   SPEAK BENGALI
+================================= */
 
 function speakBengali(text){
 
   if(!("speechSynthesis" in window)){
-    alert("এই browser-এ Voice Support নেই");
+
+    alert(
+      "এই browser-এ Voice Support নেই"
+    );
+
     return;
   }
 
@@ -237,21 +306,30 @@ function speakBengali(text){
     new SpeechSynthesisUtterance(text);
 
   msg.lang = "bn-IN";
+
   msg.rate = 0.88;
+
   msg.pitch = 1;
+
   msg.volume = 1;
 
-  const bnVoice = getBengaliVoice();
+
+  const bnVoice =
+    getBengaliVoice();
 
   if(bnVoice){
+
     msg.voice = bnVoice;
+
   }
 
   speechSynthesis.speak(msg);
 }
 
 
-/* Enable Bengali Voice */
+/* =================================
+   ENABLE VOICE
+================================= */
 
 function enableVoice(){
 
@@ -266,11 +344,16 @@ function enableVoice(){
 
   voice = true;
 
-  document.getElementById("voice").textContent =
+
+  document.getElementById("voice")
+    .textContent =
     "🔊 বাংলা Voice Alert চালু আছে";
 
-  document.getElementById("voiceStatus").style.display =
+
+  document.getElementById("voiceStatus")
+    .style.display =
     "block";
+
 
   speakBengali(
     "বাংলা পেমেন্ট ভয়েস অ্যালার্ট চালু হয়েছে"
@@ -278,14 +361,18 @@ function enableVoice(){
 }
 
 
-/* Payment announcement */
+/* =================================
+   PAYMENT ANNOUNCEMENT
+================================= */
 
 function announcePayment(amount){
 
   if(!voice) return;
 
+
   const value =
     Number(amount || 0).toFixed(2);
+
 
   speakBengali(
     "পেমেন্ট পাওয়া গেছে। " +
@@ -295,9 +382,9 @@ function announcePayment(amount){
 }
 
 
-/* ================================
+/* =================================
    ESCAPE HTML
-================================ */
+================================= */
 
 function esc(x){
 
@@ -309,39 +396,45 @@ function esc(x){
 }
 
 
-/* ================================
-   LOAD PAYMENTS
-================================ */
+/* =================================
+   LOAD PAYMENT DATA
+================================= */
 
 async function load(){
 
   try{
 
-    const r = await fetch(
-      "/payments",
-      {
-        cache:"no-store"
-      }
-    );
+    const r =
+      await fetch(
+        "/payments",
+        {
+          cache:"no-store"
+        }
+      );
 
-    const d = await r.json();
+
+    const d =
+      await r.json();
 
 
-    /* Total */
+    /* TOTAL */
 
     document.getElementById("total")
       .textContent =
       "₹" +
-      Number(d.total || 0).toFixed(2);
+      Number(
+        d.total || 0
+      ).toFixed(2);
 
 
     const list =
       document.getElementById("list");
 
+
     list.innerHTML = "";
 
 
-    /* No payments */
+    /* NO TRANSACTION */
 
     if(!d.payments?.length){
 
@@ -350,23 +443,27 @@ async function load(){
         'No transactions yet' +
         '</div>';
 
+
       first = false;
 
       return;
     }
 
 
-    /* Payment list */
+    /* TRANSACTION LIST */
 
     for(const p of d.payments){
 
       const id =
         p.paymentId || "";
 
+
       const div =
         document.createElement("div");
 
-      div.className = "row";
+
+      div.className =
+        "row";
 
 
       div.innerHTML = `
@@ -377,26 +474,36 @@ async function load(){
         </div>
 
         <div class="green">
-          + ₹${Number(p.amount || 0).toFixed(2)}
+          + ₹${Number(
+            p.amount || 0
+          ).toFixed(2)}
         </div>
 
         <div>
           Method:
-          ${esc(p.method || "UPI")}
+          ${esc(
+            p.method || "UPI"
+          )}
         </div>
 
         <div>
-          ${esc(p.email || "")}
+          ${esc(
+            p.email || ""
+          )}
         </div>
 
         <div class="status">
-          ● ${esc(p.status || "captured")}
+          ● ${esc(
+            p.status || "captured"
+          )}
         </div>
 
         <div class="muted">
           ${
             p.createdAt
-            ? new Date(p.createdAt).toLocaleString("bn-IN")
+            ? new Date(
+                p.createdAt
+              ).toLocaleString("bn-IN")
             : ""
           }
         </div>
@@ -407,9 +514,7 @@ async function load(){
       list.appendChild(div);
 
 
-      /* ================================
-         NEW PAYMENT VOICE
-      ================================= */
+      /* NEW PAYMENT */
 
       if(
         !first &&
@@ -423,8 +528,6 @@ async function load(){
         );
 
 
-        /* Mark voice played */
-
         fetch(
           "/payments/" +
           encodeURIComponent(id) +
@@ -432,7 +535,10 @@ async function load(){
           {
             method:"POST"
           }
-        ).catch(() => {});
+        )
+        .catch(
+          () => {}
+        );
 
       }
 
@@ -450,6 +556,7 @@ async function load(){
 
     console.error(e);
 
+
     document.getElementById("list")
       .innerHTML =
       '<div class="empty">' +
@@ -461,9 +568,13 @@ async function load(){
 }
 
 
-/* Load Bengali voices */
+/* =================================
+   LOAD BENGALI VOICES
+================================= */
 
-if("speechSynthesis" in window){
+if(
+  "speechSynthesis" in window
+){
 
   speechSynthesis.onvoiceschanged =
     function(){
@@ -475,17 +586,91 @@ if("speechSynthesis" in window){
 }
 
 
-/* First load */
+/* =================================
+   QR 5 MINUTE COUNTDOWN
+================================= */
+
+let qrSeconds = 5 * 60;
+
+
+function startQRCountdown(){
+
+  const countdown =
+    document.getElementById(
+      "qrCountdown"
+    );
+
+
+  const timer =
+    setInterval(
+
+      () => {
+
+        const minutes =
+          Math.floor(
+            qrSeconds / 60
+          );
+
+
+        const seconds =
+          qrSeconds % 60;
+
+
+        countdown.textContent =
+          "⏱️ " +
+          String(
+            minutes
+          ).padStart(2,"0") +
+          ":" +
+          String(
+            seconds
+          ).padStart(2,"0");
+
+
+        if(qrSeconds <= 0){
+
+          clearInterval(timer);
+
+
+          countdown.textContent =
+            "❌ QR Code Expired";
+
+
+          countdown.classList.add(
+            "expired"
+          );
+
+
+          return;
+        }
+
+
+        qrSeconds--;
+
+      },
+
+      1000
+
+    );
+
+}
+
+
+/* =================================
+   START
+================================= */
 
 load();
-
-
-/* Check payment every 5 seconds */
 
 setInterval(
   load,
   5000
 );
+
+
+/* START QR TIMER */
+
+startQRCountdown();
 
 </script>
 
