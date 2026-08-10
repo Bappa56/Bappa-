@@ -2,22 +2,30 @@
 <html lang="bn">
 
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
 
 <title>Payment Voice Alert</title>
 
+
 <style>
 
+/* =========================
+   BASIC
+========================= */
+
 *{
-  box-sizing:border-box
+  box-sizing:border-box;
 }
 
 body{
   margin:0;
   background:#f3f4f6;
   font-family:Arial,sans-serif;
-  color:#111827
+  color:#111827;
 }
 
 header{
@@ -26,13 +34,13 @@ header{
   text-align:center;
   padding:18px;
   font-size:21px;
-  font-weight:700
+  font-weight:700;
 }
 
 main{
   max-width:520px;
   margin:auto;
-  padding:16px
+  padding:16px;
 }
 
 .card{
@@ -40,101 +48,179 @@ main{
   border-radius:18px;
   padding:20px;
   margin-bottom:16px;
-  box-shadow:0 5px 18px #0001
+  box-shadow:0 5px 18px #0001;
 }
 
+
+/* =========================
+   BALANCE
+========================= */
+
 .balance{
-  background:linear-gradient(135deg,#2563eb,#7c3aed);
-  color:#fff
+  background:
+  linear-gradient(
+    135deg,
+    #2563eb,
+    #7c3aed
+  );
+
+  color:#fff;
 }
 
 .label{
-  font-size:14px
+  font-size:14px;
 }
 
 .amount{
   font-size:36px;
   font-weight:800;
-  margin:8px 0 16px
+  margin:8px 0 16px;
 }
+
+
+/* =========================
+   BUTTON
+========================= */
 
 button{
   border:0;
   border-radius:10px;
   padding:11px 16px;
   font-weight:700;
-  cursor:pointer
+  cursor:pointer;
 }
 
 .refresh{
-  color:#2563eb
+  color:#2563eb;
 }
 
 .voice{
   background:#111827;
   color:#fff;
   width:100%;
-  margin:10px 0
+  margin:7px 0;
 }
 
+.voice.repeat{
+  background:#2563eb;
+}
+
+
+/* =========================
+   QR
+========================= */
+
 .qr{
-  text-align:center
+  text-align:center;
 }
 
 .qr img{
   width:290px;
   max-width:100%;
-  border-radius:12px
+  border-radius:12px;
+  display:block;
+  margin:auto;
 }
+
+.qr p{
+  margin-bottom:8px;
+}
+
+
+/* =========================
+   COUNTDOWN
+========================= */
+
+.countdown{
+  margin-top:12px;
+  padding:12px;
+
+  background:#111827;
+
+  color:#fff;
+
+  border-radius:10px;
+
+  font-size:21px;
+
+  font-weight:800;
+
+  text-align:center;
+}
+
+.expired{
+  background:#dc2626;
+}
+
+
+/* =========================
+   TEXT
+========================= */
 
 .muted{
   color:#6b7280;
-  font-size:13px
+  font-size:13px;
 }
 
-.row{
-  padding:13px 0;
-  border-bottom:1px solid #e5e7eb
-}
-
-.green{
+.status{
   color:#16a34a;
-  font-weight:700
+  font-size:13px;
+  font-weight:600;
 }
 
 .empty{
   text-align:center;
   color:#777;
-  padding:20px
+  padding:20px;
 }
 
-.status{
+
+/* =========================
+   TRANSACTION
+========================= */
+
+.row{
+  padding:14px 0;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.green{
   color:#16a34a;
-  font-size:13px
+  font-weight:700;
+  font-size:18px;
+  margin:5px 0;
 }
 
-/* QR COUNTDOWN */
 
-.countdown{
-  margin-top:12px;
+/* =========================
+   VOICE STATUS
+========================= */
+
+.voiceStatus{
+  display:none;
+
+  background:#dcfce7;
+
+  color:#15803d;
+
   padding:10px;
-  background:#111827;
-  color:#fff;
-  border-radius:10px;
-  font-size:20px;
-  font-weight:800;
-  text-align:center
-}
 
-.expired{
-  background:#dc2626
+  border-radius:10px;
+
+  text-align:center;
+
+  font-size:13px;
+
+  margin:8px 0;
 }
 
 </style>
+
 </head>
 
 
 <body>
+
 
 <header>
 Payment Voice Alert
@@ -144,97 +230,129 @@ Payment Voice Alert
 <main>
 
 
-<!-- BALANCE -->
+<!-- =========================
+     BALANCE
+========================= -->
 
 <section class="card balance">
 
-<div class="label">
-Total Collect Amount
-</div>
+  <div class="label">
+    Total Collect Amount
+  </div>
 
-<div class="amount" id="total">
-₹0.00
-</div>
+  <div
+    class="amount"
+    id="total">
+    ₹0.00
+  </div>
 
-<button class="refresh" onclick="load()">
-🔄 Refresh Balance
-</button>
+  <button
+    class="refresh"
+    onclick="load()">
+
+    🔄 Refresh Balance
+
+  </button>
 
 </section>
 
 
-<!-- QR CODE -->
+
+<!-- =========================
+     QR CODE
+========================= -->
 
 <section class="card qr">
 
-<h2>
-Scan & Pay
-</h2>
+  <h2>
+    Scan & Pay
+  </h2>
 
-<img
-src="/qr.png"
-alt="UPI QR Code"
->
 
-<!-- 5 MINUTE COUNTDOWN -->
+  <img
+    src="/qr.png"
+    alt="UPI QR Code"
+    id="qrImage"
+  >
 
-<div
-id="qrCountdown"
-class="countdown"
->
-⏱️ 05:00
-</div>
 
-<p>
-Scan using your UPI app.
-</p>
+  <!-- 5 MINUTE COUNTDOWN -->
 
-<div class="muted">
-Google Pay • PhonePe • Paytm • BHIM
-</div>
+  <div
+    id="qrCountdown"
+    class="countdown">
+
+    ⏱️ 05:00
+
+  </div>
+
+
+  <p>
+    Scan using your UPI app.
+  </p>
+
+
+  <div class="muted">
+    Google Pay • PhonePe • Paytm • BHIM
+  </div>
 
 </section>
 
 
-<!-- TRANSACTION HISTORY -->
+
+<!-- =========================
+     TRANSACTION HISTORY
+========================= -->
 
 <section class="card">
 
-<h2>
-Transaction History
-</h2>
+  <h2>
+    Transaction History
+  </h2>
 
 
-<!-- VOICE BUTTON -->
+  <!-- ENABLE VOICE -->
 
-<button
-class="voice"
-onclick="enableVoice()"
-id="voice"
->
-🔊 বাংলা Voice Alert চালু করুন
-</button>
+  <button
+    class="voice"
+    onclick="enableVoice()"
+    id="voice">
 
-<button class="voice" onclick="repeatLastPayment()" id="repeatVoice">
-🔁 Repeat Last Payment
-</button>
-<div
-id="voiceStatus"
-class="status"
-style="display:none"
->
-  
-● বাংলা Voice Alert চালু আছে
-</div>
+    🔊 বাংলা Voice Alert চালু করুন
+
+  </button>
 
 
-<div id="list">
+  <!-- VOICE STATUS -->
 
-<div class="empty">
-Loading...
-</div>
+  <div
+    class="voiceStatus"
+    id="voiceStatus">
 
-</div>
+    ● বাংলা Voice Alert চালু আছে
+
+  </div>
+
+
+  <!-- REPEAT LAST PAYMENT -->
+
+  <button
+    class="voice repeat"
+    onclick="repeatLastPayment()">
+
+    🔁 Repeat Last Payment
+
+  </button>
+
+
+  <div
+    id="list">
+
+    <div class="empty">
+      Loading...
+    </div>
+
+  </div>
 
 </section>
 
@@ -242,7 +360,9 @@ Loading...
 </main>
 
 
+
 <script>
+
 
 /* =================================
    VARIABLES
@@ -254,9 +374,18 @@ let first = true;
 
 let voice = false;
 
+let lastPayment = null;
+
 
 /* =================================
-   BENGALI VOICE
+   5 MINUTE QR TIMER
+================================= */
+
+let qrSeconds = 5 * 60;
+
+
+/* =================================
+   GET BENGALI VOICE
 ================================= */
 
 function getBengaliVoice(){
@@ -265,31 +394,39 @@ function getBengaliVoice(){
     return null;
   }
 
+
   const voices =
     speechSynthesis.getVoices();
 
-  let bn =
-    voices.find(v =>
+
+  let voice =
+    voices.find(
+      v =>
       v.lang &&
       v.lang.toLowerCase() === "bn-in"
     );
 
-  if(!bn){
 
-    bn =
-      voices.find(v =>
+  if(!voice){
+
+    voice =
+      voices.find(
+        v =>
         v.lang &&
-        v.lang.toLowerCase().startsWith("bn")
+        v.lang.toLowerCase()
+          .startsWith("bn")
       );
 
   }
 
-  return bn || null;
+
+  return voice || null;
+
 }
 
 
 /* =================================
-   SPEAK BENGALI
+   BENGALI SPEAK
 ================================= */
 
 function speakBengali(text){
@@ -301,12 +438,16 @@ function speakBengali(text){
     );
 
     return;
+
   }
+
 
   speechSynthesis.cancel();
 
+
   const msg =
     new SpeechSynthesisUtterance(text);
+
 
   msg.lang = "bn-IN";
 
@@ -320,13 +461,14 @@ function speakBengali(text){
   const bnVoice =
     getBengaliVoice();
 
+
   if(bnVoice){
-
     msg.voice = bnVoice;
-
   }
 
+
   speechSynthesis.speak(msg);
+
 }
 
 
@@ -343,24 +485,29 @@ function enableVoice(){
     );
 
     return;
+
   }
+
 
   voice = true;
 
 
-  document.getElementById("voice")
-    .textContent =
+  document.getElementById(
+    "voice"
+  ).textContent =
     "🔊 বাংলা Voice Alert চালু আছে";
 
 
-  document.getElementById("voiceStatus")
-    .style.display =
+  document.getElementById(
+    "voiceStatus"
+  ).style.display =
     "block";
 
 
   speakBengali(
     "বাংলা পেমেন্ট ভয়েস অ্যালার্ট চালু হয়েছে"
   );
+
 }
 
 
@@ -370,18 +517,90 @@ function enableVoice(){
 
 function announcePayment(amount){
 
-  if(!voice) return;
+  if(!voice){
+    return;
+  }
 
 
   const value =
-    Number(amount || 0).toFixed(2);
+    Number(amount || 0)
+      .toFixed(2);
 
 
   speakBengali(
-    "পেমেন্ট রিসিভ হয়েছে আপনার ব্যাংক অ্যাকাউন্টে । " +
+    "আপনার অ্যাকাউন্টে টাকা জমা হয়েছে। " +
     value +
     " টাকা ধন্যবাদ।"
   );
+
+}
+
+
+/* =================================
+   REPEAT LAST PAYMENT
+================================= */
+
+function repeatLastPayment(){
+
+  if(!("speechSynthesis" in window)){
+
+    alert(
+      "এই browser-এ Voice Support নেই"
+    );
+
+    return;
+
+  }
+
+
+  if(!lastPayment){
+
+    alert(
+      "এখনও কোনো payment পাওয়া যায়নি"
+    );
+
+    return;
+
+  }
+
+
+  const amount =
+    Number(
+      lastPayment.amount || 0
+    ).toFixed(2);
+
+
+  speechSynthesis.cancel();
+
+
+  const msg =
+    new SpeechSynthesisUtterance(
+      "শেষ পেমেন্ট পাওয়া গেছে। " +
+      amount +
+      " টাকা ধন্যবাদ।"
+    );
+
+
+  msg.lang = "bn-IN";
+
+  msg.rate = 0.88;
+
+  msg.pitch = 1;
+
+  msg.volume = 1;
+
+
+  const bnVoice =
+    getBengaliVoice();
+
+
+  if(bnVoice){
+    msg.voice = bnVoice;
+  }
+
+
+  speechSynthesis.speak(msg);
+
 }
 
 
@@ -392,15 +611,28 @@ function announcePayment(amount){
 function esc(x){
 
   return String(x ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;");
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    );
+
 }
 
 
 /* =================================
-   LOAD PAYMENT DATA
+   LOAD PAYMENTS
 ================================= */
 
 async function load(){
@@ -416,14 +648,26 @@ async function load(){
       );
 
 
+    if(!r.ok){
+
+      throw new Error(
+        "Payment API error"
+      );
+
+    }
+
+
     const d =
       await r.json();
 
 
-    /* TOTAL */
+    /* =========================
+       TOTAL BALANCE
+    ========================= */
 
-    document.getElementById("total")
-      .textContent =
+    document.getElementById(
+      "total"
+    ).textContent =
       "₹" +
       Number(
         d.total || 0
@@ -431,38 +675,112 @@ async function load(){
 
 
     const list =
-      document.getElementById("list");
+      document.getElementById(
+        "list"
+      );
 
 
     list.innerHTML = "";
 
 
-    /* NO TRANSACTION */
+    /* =========================
+       PAYMENT DATA
+    ========================= */
 
-    if(!d.payments?.length){
+    let payments =
+      Array.isArray(d.payments)
+      ? d.payments
+      : [];
+
+
+    /* =========================
+       24 HOUR FILTER
+       WEBSITE থেকে পুরোনো payment hide
+    ========================= */
+
+    const now =
+      Date.now();
+
+
+    payments =
+      payments.filter(
+        p => {
+
+          if(!p.createdAt){
+            return true;
+          }
+
+
+          const time =
+            new Date(
+              p.createdAt
+            ).getTime();
+
+
+          if(
+            Number.isNaN(time)
+          ){
+            return true;
+          }
+
+
+          const age =
+            now - time;
+
+
+          return age <
+            24 * 60 * 60 * 1000;
+
+        }
+      );
+
+
+    /* =========================
+       NO PAYMENT
+    ========================= */
+
+    if(!payments.length){
+
+      lastPayment = null;
+
 
       list.innerHTML =
         '<div class="empty">' +
-        'No transactions yet' +
+        'No transactions in last 24 hours' +
         '</div>';
 
 
       first = false;
 
       return;
+
     }
 
 
-    /* TRANSACTION LIST */
+    /* =========================
+       LATEST PAYMENT
+    ========================= */
 
-    for(const p of d.payments){
+    lastPayment =
+      payments[0];
+
+
+    /* =========================
+       DISPLAY PAYMENTS
+    ========================= */
+
+    for(
+      const p of payments
+    ){
 
       const id =
         p.paymentId || "";
 
 
       const div =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
 
       div.className =
@@ -473,7 +791,9 @@ async function load(){
 
         <div>
           Payment ID:
-          <b>${esc(id)}</b>
+          <b>
+            ${esc(id)}
+          </b>
         </div>
 
         <div class="green">
@@ -506,7 +826,9 @@ async function load(){
             p.createdAt
             ? new Date(
                 p.createdAt
-              ).toLocaleString("bn-IN")
+              ).toLocaleString(
+                "bn-IN"
+              )
             : ""
           }
         </div>
@@ -517,7 +839,9 @@ async function load(){
       list.appendChild(div);
 
 
-      /* NEW PAYMENT */
+      /* =========================
+         NEW PAYMENT VOICE
+      ========================= */
 
       if(
         !first &&
@@ -560,8 +884,9 @@ async function load(){
     console.error(e);
 
 
-    document.getElementById("list")
-      .innerHTML =
+    document.getElementById(
+      "list"
+    ).innerHTML =
       '<div class="empty">' +
       'Unable to load transactions' +
       '</div>';
@@ -572,7 +897,85 @@ async function load(){
 
 
 /* =================================
-   LOAD BENGALI VOICES
+   QR COUNTDOWN
+================================= */
+
+function startQRCountdown(){
+
+  const countdown =
+    document.getElementById(
+      "qrCountdown"
+    );
+
+
+  const timer =
+    setInterval(
+
+      function(){
+
+        const minutes =
+          Math.floor(
+            qrSeconds / 60
+          );
+
+
+        const seconds =
+          qrSeconds % 60;
+
+
+        countdown.textContent =
+          "⏱️ " +
+          String(
+            minutes
+          ).padStart(
+            2,
+            "0"
+          ) +
+          ":" +
+          String(
+            seconds
+          ).padStart(
+            2,
+            "0"
+          );
+
+
+        if(
+          qrSeconds <= 0
+        ){
+
+          clearInterval(
+            timer
+          );
+
+
+          countdown.textContent =
+            "❌ QR Code Expired";
+
+
+          countdown.classList.add(
+            "expired"
+          );
+
+
+          return;
+
+        }
+
+
+        qrSeconds--;
+
+      },
+
+      1000
+
+    );
+
+}
+
+
+/* =================================
+   BROWSER VOICES LOAD
 ================================= */
 
 if(
@@ -590,80 +993,13 @@ if(
 
 
 /* =================================
-   QR 5 MINUTE COUNTDOWN
-================================= */
-
-let qrSeconds = 5 * 60;
-
-
-function startQRCountdown(){
-
-  const countdown =
-    document.getElementById(
-      "qrCountdown"
-    );
-
-
-  const timer =
-    setInterval(
-
-      () => {
-
-        const minutes =
-          Math.floor(
-            qrSeconds / 60
-          );
-
-
-        const seconds =
-          qrSeconds % 60;
-
-
-        countdown.textContent =
-          "⏱️ " +
-          String(
-            minutes
-          ).padStart(2,"0") +
-          ":" +
-          String(
-            seconds
-          ).padStart(2,"0");
-
-
-        if(qrSeconds <= 0){
-
-          clearInterval(timer);
-
-
-          countdown.textContent =
-            "❌ QR Code Expired";
-
-
-          countdown.classList.add(
-            "expired"
-          );
-
-
-          return;
-        }
-
-
-        qrSeconds--;
-
-      },
-
-      1000
-
-    );
-
-}
-
-
-/* =================================
-   START
+   START WEBSITE
 ================================= */
 
 load();
+
+
+/* CHECK PAYMENT EVERY 5 SECOND */
 
 setInterval(
   load,
@@ -675,7 +1011,9 @@ setInterval(
 
 startQRCountdown();
 
+
 </script>
 
 </body>
+
 </html>
